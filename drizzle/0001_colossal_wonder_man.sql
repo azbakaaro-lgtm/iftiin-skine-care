@@ -1,0 +1,20 @@
+CREATE TABLE `phaseOneAccounts` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`role` enum('super_admin','store_admin','customer') NOT NULL,
+	`status` enum('pending','active','suspended') NOT NULL DEFAULT 'active',
+	`fullName` varchar(160) NOT NULL,
+	`storeName` varchar(160),
+	`phoneNumber` varchar(50) NOT NULL,
+	`email` varchar(320) NOT NULL,
+	`username` varchar(80),
+	`passwordHash` varchar(255),
+	`location` varchar(255),
+	`ownerOpenId` varchar(64),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`lastSignedIn` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `phaseOneAccounts_id` PRIMARY KEY(`id`),
+	CONSTRAINT `phaseOneAccounts_email_unique` UNIQUE(`email`),
+	CONSTRAINT `phaseOneAccounts_username_unique` UNIQUE(`username`),
+	CONSTRAINT `phaseOneAccounts_ownerOpenId_unique` UNIQUE(`ownerOpenId`)
+);

@@ -1,0 +1,102 @@
+# Project TODO
+
+- [x] Create the Iftiin Skin Care visual identity and mobile app icon assets.
+- [x] Apply the Somali skincare color system and navigation structure.
+- [x] Build the welcome and face-first scan entry flow.
+- [x] Add camera/gallery photo selection with clear permission messaging.
+- [x] Add photo quality review, retake, and continue interactions.
+- [x] Provide local photo deletion and transparent privacy/safety information.
+- [x] Build the 23-question Somali assessment with single and multiple choice responses.
+- [x] Generate transparent local assessment results without claiming unavailable AI analysis.
+- [x] Build skin profile, concern detail, and safety information screens.
+- [x] Build personalized morning/evening routine and product guidance.
+- [x] Build the interactive 28-day plan and progress tracking experience.
+- [x] Persist assessment and routine progress locally on the device.
+- [x] Prepare clean extension points for future login, notifications, learning content, admin, and optional AI analysis.
+- [x] Add accessibility-focused touch targets and Somali content throughout.
+- [x] Test primary navigation and data persistence paths.
+- [x] Resolve any type, lint, or runtime issues before delivery.
+- [x] Review the completed app against the full supplied specification and refine remaining priority gaps.
+- [x] Add a dedicated progress view with week milestones and visual comparison of locally saved scans.
+- [x] Add a distinct Product Scanner that accepts a face photo and one to four product photos from camera or gallery.
+- [x] Generate transparent scanner results that identify only visibly supported product details and use Keep, Review, or Not enough information recommendations.
+- [x] Keep the user’s original face photo visible during questionnaire screens with a reserved progress-scan area.
+- [x] Add local product catalog records with product images and complete management-ready fields.
+- [x] Show catalog images in Products, recommendations, routines, and Product Scanner results.
+- [x] Record visual scan history against Day 1, Day 7, Day 14, Day 21, and Day 28 comparison slots.
+- [x] Replace the long questionnaire with a maximum of seven Somali-only follow-up questions.
+- [x] Add consent-based face-photo observations for visible skincare features with non-diagnostic Somali wording.
+- [x] Show a short Somali first-result summary before the seven follow-up questions.
+- [x] Add Somali-only final product-category, preferred-ingredient, and sensitivity-warning recommendations.
+- [x] Expand catalog choices for dry, oily, combination, acne-prone, and redness-prone skincare needs.
+- [x] Make the detailed sensitivity warning appear only for a reported sensitivity or prior reaction.
+- [x] Remove non-applicable sensitivity warnings from recommendations for users reporting no sensitivity or prior reaction.
+- [x] Review the latest build against the supplied requirements and implement the next priority refinement.
+- [x] Show catalog-backed product images in final face-scan recommendations, not only generic product-category advice.
+- [x] Add the three Phase 1 roles: Super Admin, Store Admin, and Customer.
+- [x] Create Store Admin registration with all required store fields and a pending approval status.
+- [x] Create Customer registration with all required fields and immediate active status.
+- [x] Create protected login, profile, logout, and role-specific navigation.
+- [x] Create Super Admin, Store Admin, and Customer dashboards.
+- [x] Create Super Admin store approval, suspension, store-list, and customer-list management pages.
+- [x] Enforce role restrictions so users can access only their authorized records and pages.
+- [x] Seed the initial Super Admin account without providing public Super Admin registration.
+- [x] Configure the user-provided email as a private Super Admin credential with an updated password hash.
+- [x] Permit only the private Super Admin account to use the standard email-and-password login form.
+- [x] Diagnose the reported Super Admin email-and-password login failure and verify the published endpoint accepts the configured credential.
+- [x] Add a clean shared Settings screen that is available to every active role.
+- [x] Add a secure Change Password flow that verifies the current password and confirms the new password.
+- [x] Preserve the existing lavender, blue, purple, rounded-card theme throughout the Settings experience.
+- [x] Add store-scoped product CRUD with optional descriptions and camera/gallery product images.
+- [x] Add categories, original price, discount types, calculated final price, stock, and availability controls.
+- [x] Add Store Admin product search and category/availability filters.
+- [x] Add store-level delivery enablement, fee, and delivery-area settings.
+- [x] Add Super Admin read-only visibility of all store products.
+- [x] Enforce server-side Store Admin ownership checks for every product and delivery action.
+- [x] Add customer store discovery, available product browsing, search, filters, and product details.
+- [x] Add a customer cart with quantity controls, line pricing, subtotal, discount, delivery fee, and total.
+- [x] Add delivery-area selection based on the selected store’s enabled delivery settings.
+- [x] Add secure order creation with customer, store, product, quantity, price, delivery, total, date, and status records.
+- [x] Add customer-only My Orders and order-status history.
+- [x] Add Store Admin own-store order management and valid order-status updates.
+- [x] Add Super Admin read-only visibility of all orders.
+- [x] Enforce server-side customer, store, and Super Admin order access boundaries.
+- [x] Add role-scoped in-app order status notifications for customers and Store Admins.
+- [x] Allow customers to cancel only their own pending orders.
+- [x] Add Store Admin order search and status filters.
+- [x] Show role-scoped unread notification counts on Customer and Store Admin dashboards.
+- [x] Add a role-scoped action to mark all notifications as read.
+- [x] Add protected order details with a persistent Somali order-status timeline.
+- [x] Add Store Admin payment-receiving settings for EVC Plus, eDahab, Premier Wallet, and Merchant.
+- [x] Add a Customer payment selection and external-provider handoff that never auto-confirms payment.
+- [x] Add Store Admin confirmation, rejection, and failed-payment controls with role-scoped notifications.
+- [x] Record five-percent commission only for confirmed payments and calculate store earnings.
+- [x] Add Super Admin payment receiving settings, commission history, and payment reporting dashboard.
+- [x] Launch the verified EVC Plus USSD merchant-payment prompt after customer confirmation, while keeping Store Admin verification mandatory.
+- [x] Add a Customer face-photo scan and Somali questionnaire that produce only a non-diagnostic preliminary assessment.
+- [x] Gate full skin results behind a Store Admin-confirmed payment for a recommended product.
+- [x] Show recommended store products with reason, cart, and purchase navigation after the preview assessment.
+- [x] Unlock full Somali skin guidance, product-use guidance, morning/evening and monthly routines after payment confirmation.
+- [x] Unlock daily customer face scans and long-term routine progress tracking only after payment confirmation.
+- [x] Make the initial customer scan a one-time scan that shows visible non-diagnostic observations before the questionnaire.
+- [x] Hide Store Admin receiving account numbers from customer payment screens while preserving the provider handoff.
+- [x] Replace customer-visible product stock counts with simple availability labels.
+- [x] Replace raw red validation payloads with clear Somali field-level error messages.
+- [x] Apply a clean black-and-white app theme.
+- [x] Add a customer-selectable Somali and English language preference.
+- [x] Restore a clean white and light-blue visual theme across the shared marketplace controls.
+- [x] Update the Store Admin order lifecycle to Pending, Payment Confirmed, Processing, Ready, Out for Delivery, Delivered, Completed, or Cancelled.
+- [x] Ensure Store Admin order views show only their store’s customer, items, quantities, prices, discount, delivery fee, total, payment method, and payment status.
+- [x] Keep Store Admin payment confirmation and rejection controls role-scoped and lock fulfilment until payment is paid.
+- [x] Show every approved Store Admin order-status change to the owning Customer in My Orders.
+- [x] Preserve Super Admin read-only all-order visibility and validate Phase 1–4 boundaries.
+- [x] Create a five-percent commission payment record when Store Admin confirms a customer payment, showing commission and store earnings.
+- [x] Restrict a Store Admin from receiving new orders while a required commission payment is unpaid, without blocking existing order completion.
+- [x] Let Store Admin submit a manual commission-payment-sent status to the Super Admin payment account without claiming an automatic transfer.
+- [x] Let Super Admin review pending commission payments, verify payment, view history, and automatically reactivate the store.
+- [x] Prevent customers from discovering or placing new orders at restricted stores while preserving existing Phase 1–4 behavior.
+- [x] Add deterministic tests for commission status, restriction, and automatic reactivation rules.
+- [x] Add optional Store Admin commission receipt image upload without auto-verifying payment.
+- [x] Add commission due dates and clear in-app overdue reminders for restricted stores.
+- [x] Let Super Admin review receipt evidence while retaining manual commission verification.
+- [x] Add a Super Admin-only CSV export of commission history.

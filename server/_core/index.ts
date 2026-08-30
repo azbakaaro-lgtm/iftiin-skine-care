@@ -60,14 +60,14 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
-    app.use(
+  app.use(
     "/api/trpc",
     createExpressMiddleware({
       router: appRouter,
       createContext,
-           onError({ error, path }) {
+      onError({ error, path }) {
         console.error(`[trpc] Error in ${path ?? "<unknown>"}:`, error.message);
-        let cause = error.cause;
+        let cause: any = error.cause;
         let depth = 0;
         while (cause && depth < 5) {
           console.error(`[trpc] Cause (depth ${depth}):`, cause.message ?? cause);
@@ -79,6 +79,8 @@ async function startServer() {
           depth += 1;
         }
       },
+    }),
+  );
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);

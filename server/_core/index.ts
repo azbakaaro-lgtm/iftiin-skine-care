@@ -60,11 +60,15 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
-  app.use(
+    app.use(
     "/api/trpc",
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError({ error, path }) {
+        console.error(`[trpc] Error in ${path ?? "<unknown>"}:`, error);
+        if (error.cause) console.error("[trpc] Caused by:", error.cause);
+      },
     }),
   );
 

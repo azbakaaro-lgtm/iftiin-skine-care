@@ -66,7 +66,11 @@ async function startServer() {
       router: appRouter,
       createContext,
       onError({ error, path }) {
+        // Log the full error (including the underlying DB driver cause,
+        // which tRPC's default response to the client omits) so it shows
+        // up in `railway logs` / the Deploy Logs tab for debugging.
         console.error(`[trpc] Error in ${path ?? "<unknown>"}:`, error.message);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cause: any = error.cause;
         let depth = 0;
         while (cause && depth < 5) {

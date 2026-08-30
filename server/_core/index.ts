@@ -65,12 +65,20 @@ async function startServer() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
-      onError({ error, path }) {
-        console.error(`[trpc] Error in ${path ?? "<unknown>"}:`, error);
-        if (error.cause) console.error("[trpc] Caused by:", error.cause);
+           onError({ error, path }) {
+        console.error(`[trpc] Error in ${path ?? "<unknown>"}:`, error.message);
+        let cause = error.cause;
+        let depth = 0;
+        while (cause && depth < 5) {
+          console.error(`[trpc] Cause (depth ${depth}):`, cause.message ?? cause);
+          if (cause.code) console.error(`[trpc]   code: ${cause.code}`);
+          if (cause.errno) console.error(`[trpc]   errno: ${cause.errno}`);
+          if (cause.sqlMessage) console.error(`[trpc]   sqlMessage: ${cause.sqlMessage}`);
+          if (cause.sqlState) console.error(`[trpc]   sqlState: ${cause.sqlState}`);
+          cause = cause.cause;
+          depth += 1;
+        }
       },
-    }),
-  );
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);

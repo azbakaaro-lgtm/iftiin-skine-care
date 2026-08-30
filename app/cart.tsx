@@ -2,7 +2,8 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { getApiBaseUrl } from "@/constants/oauth";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { showAlert } from "@/lib/alert";
 import { Card, EmptyState, Header, LoadingCare, Page, palette, PrimaryButton, SecondaryButton } from "@/components/iftiin-ui";
 import { useCart } from "@/lib/cart-context";
 import { RequireRole, usePhaseSession } from "@/lib/phase1-session";
@@ -35,13 +36,13 @@ function CartCheckout({ sessionToken, skinJourneyId, items, deliveryArea, setDel
   const total = productTotal + deliveryFee;
 
   async function placeOrder() {
-    if (store.deliveryEnabled && !deliveryArea) { Alert.alert("Dooro goob", "Fadlan dooro goobta delivery-ga."); return; }
-    if (!method) { Alert.alert("Dooro habka lacagta", "Dooro EVC Plus, eDahab, Premier Wallet, ama Merchant."); return; }
+    if (store.deliveryEnabled && !deliveryArea) { showAlert("Dooro goob", "Fadlan dooro goobta delivery-ga."); return; }
+    if (!method) { showAlert("Dooro habka lacagta", "Dooro EVC Plus, eDahab, Premier Wallet, ama Merchant."); return; }
     try {
       const order = await create.mutateAsync({ sessionToken, items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })), deliveryArea, paymentMethod: method, skinJourneyId });
       clear();
       router.replace({ pathname: "/order-payment" as never, params: { orderId: String(order.id) } });
-    } catch (issue) { Alert.alert("Dalabka lama gudbin karo", issue instanceof Error ? issue.message : "Mar kale isku day."); }
+    } catch (issue) { showAlert("Dalabka lama gudbin karo", issue instanceof Error ? issue.message : "Mar kale isku day."); }
   }
 
   return <Page><ScrollView contentContainerStyle={styles.scroll}>
@@ -54,7 +55,7 @@ function CartCheckout({ sessionToken, skinJourneyId, items, deliveryArea, setDel
     <Card style={styles.summary}><Summary label="Subtotal" value={subtotal} /><Summary label="Discount" value={discount} /><Summary label="Delivery fee" value={deliveryFee} /><View style={styles.summaryLine} /><Summary label="Wadarta" value={total} bold /></Card>
     <Card style={styles.paymentCard}><Text style={styles.paymentTitle}>Dooro habka lacag-bixinta</Text><Text style={styles.paymentText}>Lambarka dukaanka laguma soo bandhigayo Iftiin. Marka xigta waxaa lagu geynayaa habka lacagta ee aad dooratay, dukaankuna wuxuu akoonkiisa ka hubinayaa helitaanka lacagta.</Text>{options.isLoading ? <Text style={styles.deliveryText}>Hababka lacagta waa la soo gelinayaa...</Text> : null}{!options.isLoading && !(options.data?.length) ? <Text style={styles.error}>Dukaankani weli ma dejin hab lacag lagu helo. La xiriir dukaanka.</Text> : null}<View style={styles.methodList}>{(options.data ?? []).map((option) => <Pressable key={option.method} onPress={() => setMethod(option.method as PaymentMethod)} style={[styles.method, method === option.method && styles.methodOn]}><MaterialIcons name={method === option.method ? "radio-button-checked" : "radio-button-unchecked"} size={19} color={palette.purple} /><View style={styles.methodCopy}><Text style={styles.methodName}>{option.label}</Text><Text style={styles.methodAccount}>Waxaa lagu geynayaa habka lacagta si ammaan ah.</Text></View></Pressable>)}</View></Card>
     <PrimaryButton label={create.isPending ? "Dalabka waa la gudbinayaa..." : "Gudbi dalabka oo bixi"} icon="account-balance-wallet" onPress={placeOrder} disabled={create.isPending || !method || !(options.data?.length)} />
-    <SecondaryButton label="Nadiifi cart-ka" icon="delete-outline" onPress={() => Alert.alert("Nadiifi cart", "Ma tirtiraysaa dhammaan product-yada?", [{ text: "Jooji", style: "cancel" }, { text: "Tirtir", style: "destructive", onPress: clear }])} />
+    <SecondaryButton label="Nadiifi cart-ka" icon="delete-outline" onPress={() => showAlert("Nadiifi cart", "Ma tirtiraysaa dhammaan product-yada?", [{ text: "Jooji", style: "cancel" }, { text: "Tirtir", style: "destructive", onPress: clear }])} />
   </ScrollView></Page>;
 }
 

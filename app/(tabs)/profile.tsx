@@ -1,6 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { showAlert } from "@/lib/alert";
 import { Card, EmptyState, Header, LoadingCare, Page, palette, PrimaryButton, SecondaryButton } from "@/components/iftiin-ui";
 import { useCare } from "@/lib/skin-care-context";
 
@@ -8,7 +9,7 @@ export default function ProfileScreen() {
   const { hydrated, assessment, history, deleteCareData } = useCare();
   if (!hydrated) return <LoadingCare />;
   if (!assessment) return <Page><EmptyState icon="person-outline" title="Qoraalkaaga diyaar ma aha" detail="Marka hore samee sawirka wejiga, ka dibna halkan ayaad ka maamuli kartaa xogtaada." action={<PrimaryButton label="Bilow sawirka wejiga" onPress={() => router.navigate("/(tabs)/scan" as never)} />} /></Page>;
-  const remove = () => Alert.alert("Tirtir xogta?", "Sawirkaaga, falanqayntaada, iyo horumarkaaga qalabkan ayaa la tirtirayaa.", [{ text: "Jooji", style: "cancel" }, { text: "Tirtir", style: "destructive", onPress: () => deleteCareData() }]);
+  const remove = () => showAlert("Tirtir xogta?", "Sawirkaaga, falanqayntaada, iyo horumarkaaga qalabkan ayaa la tirtirayaa.", [{ text: "Jooji", style: "cancel" }, { text: "Tirtir", style: "destructive", onPress: () => deleteCareData() }]);
   return <Page><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}><Header title="Aniga" subtitle="Xogtaada iyo asturnaanta" /><Card style={styles.profileTop}><View style={styles.avatar}><MaterialIcons name="person" size={30} color={palette.purple} /></View><View><Text style={styles.name}>Qoraalkaaga</Text><Text style={styles.caption}>Xogtaadu waxay ku jirtaa qalabkaaga</Text></View></Card><Text style={styles.label}>TAARIIKHDA SAWIRRADA</Text><Card><Text style={styles.historyTitle}>{history.length} sawir ayaa qalabkan ku keydsan</Text><Text style={styles.historyDetail}>Sawirkii ugu dambeeyay: {new Date(assessment.createdAt).toLocaleDateString()}</Text></Card><Text style={styles.label}>ASTURNAANTA</Text><Card style={styles.privacy}><MaterialIcons name="lock-outline" size={20} color={palette.purple} /><Text style={styles.privacyText}>Sawirkaaga lama wadaago, looma isticmaalo tababar, mana baxo qalabkaaga release-kan. Waxaad tirtiri kartaa wakhti kasta.</Text></Card><Card style={styles.safety}><MaterialIcons name="medical-information" size={20} color="#9D6B14" /><Text style={styles.safetyText}>Haddii aad leedahay xanuun, barar, gubasho ama calaamado daran oo joogto ah, la xiriir dhakhtar maqaarka ku takhasusay.</Text></Card><SecondaryButton label="Tirtir sawirka iyo xogtayda" icon="delete-outline" onPress={remove} /><Text style={styles.account}>Gelitaan iyo kaydinta sawirrada meel dhexe waxaa loo diyaarinayaa in si ammaan ah loo daro mustaqbalka.</Text></ScrollView></Page>;
 }
 

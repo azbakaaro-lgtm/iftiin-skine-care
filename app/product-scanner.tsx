@@ -3,7 +3,8 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { showAlert } from "@/lib/alert";
 import { Card, EmptyState, Header, LoadingCare, Page, palette, PrimaryButton, SecondaryButton } from "@/components/iftiin-ui";
 import { trpc } from "@/lib/trpc";
 import { useCare } from "@/lib/skin-care-context";
@@ -38,7 +39,7 @@ export default function ProductScannerScreen() {
   async function chooseImage(target: Target, camera: boolean) {
     if (camera) {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (permission.status !== "granted") { Alert.alert("Oggolaansho loo baahan yahay", "Kamaradda waxaa loo isticmaalaa oo keliya sawirka wajigaaga ama product-ka aad rabto inaad hubiso."); return; }
+      if (permission.status !== "granted") { showAlert("Oggolaansho loo baahan yahay", "Kamaradda waxaa loo isticmaalaa oo keliya sawirka wajigaaga ama product-ka aad rabto inaad hubiso."); return; }
     }
     const response = camera
       ? await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], allowsEditing: false, quality: 0.75, cameraType: target.kind === "face" ? ImagePicker.CameraType.front : ImagePicker.CameraType.back })

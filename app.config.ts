@@ -36,7 +36,7 @@ const config: ExpoConfig = {
     permissions: ["POST_NOTIFICATIONS", "CAMERA"],
     intentFilters: [{ action: "VIEW", autoVerify: true, data: [{ scheme: env.scheme, host: "*" }], category: ["BROWSABLE", "DEFAULT"] }],
   },
-  web: { bundler: "metro", output: "static", favicon: "./assets/images/favicon.png" },
+  web: { bundler: "metro", output: "single",  favicon: "./assets/images/favicon.png" },
   plugins: [
     "expo-router",
     ["expo-image-picker", {

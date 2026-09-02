@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Platform, View } from "react-native";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaFrameContext, SafeAreaInsetsContext, SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context";
 import type { EdgeInsets, Rect } from "react-native-safe-area-context";
@@ -24,12 +24,12 @@ const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 export const unstable_settings = { initialRouteName: "index" };
 
 export default function RootLayout() {
-  // Explicitly load the vector-icon fonts via expo-font. Without this,
-  // the web export sometimes fails to bundle the vendored .ttf files at
-  // the hashed URL the icon components request, so Firebase Hosting's
-  // SPA fallback serves index.html for that request instead of the font
-  // — every icon then silently renders as an empty box.
-  const [fontsLoaded] = useFonts({ ...MaterialIcons.font });
+  // Kick off loading the vector-icon fonts via expo-font. On some web
+  // builds the exported .ttf isn't picked up automatically, so icons can
+  // render blank until this resolves. We don't block rendering on it —
+  // that risks a permanent spinner if the load hangs for any reason — the
+  // icons will simply pop in once the font finishes loading.
+  useFonts({ ...MaterialIcons.font });
 
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
   const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
@@ -42,14 +42,6 @@ export default function RootLayout() {
     const metrics = initialWindowMetrics ?? { insets: initialInsets, frame: initialFrame };
     return { ...metrics, insets: { ...metrics.insets, top: Math.max(metrics.insets.top, 16), bottom: Math.max(metrics.insets.bottom, 12) } };
   }, [initialInsets, initialFrame]);
-
-  if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" }}>
-        <ActivityIndicator color="#236B9A" size="large" />
-      </View>
-    );
-  }
 
   const content = <GestureHandlerRootView style={{ flex: 1 }}>
     <trpc.Provider client={trpcClient} queryClient={queryClient}>

@@ -32,6 +32,15 @@ export async function listCustomerProducts(storeAdminId: number, filters: { sear
   return rows.map((row) => productView(row.product, row.storeName));
 }
 
+// Public browse feed for the pre-login landing page — no session required.
+// Shows a handful of in-stock products across every active store.
+export async function listFeaturedProducts(limit = 12) {
+  const db = await getDb();
+  if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
+  const rows = await db.select({ product: storeProducts, storeName: phaseOneAccounts.storeName }).from(storeProducts).innerJoin(phaseOneAccounts, eq(storeProducts.storeAdminId, phaseOneAccounts.id)).where(and(eq(storeProducts.availability, true), eq(phaseOneAccounts.status, "active"))).orderBy(desc(storeProducts.createdAt)).limit(limit);
+  return rows.map((row) => productView(row.product, row.storeName));
+}
+
 export async function customerProductDetail(productId: number) {
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");

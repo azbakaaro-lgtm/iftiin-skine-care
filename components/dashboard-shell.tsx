@@ -183,6 +183,17 @@ export function StatCard({ icon, value, label, tint, onPress }: { icon: keyof ty
   );
 }
 
+export function QuickLinkCard({ icon, label, tint, onPress }: { icon: keyof typeof MaterialIcons.glyphMap; label: string; tint: string; onPress?: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={styles.quickCard}>
+      <View style={[styles.statIcon, { backgroundColor: tint }]}>
+        <MaterialIcons name={icon} size={22} color={palette.purple} />
+      </View>
+      <Text style={styles.quickLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export function DashboardPanel({ title, action, children }: { title: string; action?: { label: string; onPress: () => void }; children: React.ReactNode }) {
   return (
     <View style={styles.panel}>
@@ -236,6 +247,8 @@ const styles = StyleSheet.create({
   contentScroll: { padding: 32, gap: 20, maxWidth: 1200, width: "100%", alignSelf: "center" },
 
   statCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: "#FFFFFF", borderRadius: 18, borderWidth: 1, borderColor: palette.line, padding: 16, minWidth: 220, flexGrow: 1 },
+  quickCard: { alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: "#FFFFFF", borderRadius: 18, borderWidth: 1, borderColor: palette.line, padding: 18, minWidth: 140, flexGrow: 1 },
+  quickLabel: { color: palette.ink, fontSize: 13, fontWeight: "800", textAlign: "center" },
   statIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   statValue: { color: palette.ink, fontSize: 22, fontWeight: "900" },
   statLabel: { color: palette.muted, fontSize: 12, marginTop: 2 },

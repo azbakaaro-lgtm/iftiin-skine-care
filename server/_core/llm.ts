@@ -204,11 +204,16 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
+const extraProviderHeaders = (): Record<string, string> =>
+  ENV.llmBaseUrl.includes("openrouter.ai")
+    ? { "HTTP-Referer": "https://iftiin-skine-care.web.app", "X-Title": "Iftiin Skin Care" }
+    : {};
+
 const resolveApiUrl = () => `${ENV.llmBaseUrl.replace(/\/$/, "")}/v1/chat/completions`;
 
 const assertApiKey = () => {
   if (!ENV.llmApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+    throw new Error("OPENROUTER_API_KEY (or OPENAI_API_KEY) is not configured");
   }
 };
 
@@ -376,6 +381,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${ENV.llmApiKey}`,
+      ...extraProviderHeaders(),
     },
     body: JSON.stringify(payload),
   });
@@ -406,7 +412,7 @@ export async function listLLMModels(): Promise<ModelsResponse> {
   const url = `${ENV.llmBaseUrl.replace(/\/$/, "")}/v1/models`;
 
   const response = await fetchWithBackoff(url, {
-    headers: { authorization: `Bearer ${ENV.llmApiKey}` },
+    headers: { authorization: `Bearer ${ENV.llmApiKey}`, ...extraProviderHeaders() },
   });
 
   if (!response.ok) {

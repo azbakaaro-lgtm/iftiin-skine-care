@@ -8,11 +8,14 @@ export const ENV = {
   ownerSetupKey: process.env.OWNER_SETUP_KEY ?? "",
 
   // LLM provider (OpenAI-compatible chat completions API).
-  // Works with OpenAI directly, or any compatible gateway (OpenRouter, Azure OpenAI, etc.)
-  // by overriding LLM_BASE_URL.
-  llmApiKey: process.env.OPENAI_API_KEY ?? "",
-  llmBaseUrl: process.env.LLM_BASE_URL ?? "https://api.openai.com",
-  llmModel: process.env.LLM_MODEL ?? "gpt-4o-mini",
+  // Defaults to OpenRouter's free tier — set OPENROUTER_API_KEY (or reuse
+  // OPENAI_API_KEY) and leave LLM_MODEL as "openrouter/free" to let
+  // OpenRouter auto-pick a free model (including free vision models for
+  // photo analysis). Override LLM_BASE_URL/LLM_MODEL to point at OpenAI,
+  // Azure OpenAI, or any other OpenAI-compatible gateway instead.
+  llmApiKey: process.env.OPENROUTER_API_KEY ?? process.env.OPENAI_API_KEY ?? "",
+  llmBaseUrl: process.env.LLM_BASE_URL ?? "https://openrouter.ai/api",
+  llmModel: process.env.LLM_MODEL ?? "openrouter/free",
 
   // Local file storage.
   storageDir: process.env.STORAGE_DIR ?? "./data/uploads",

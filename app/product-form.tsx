@@ -242,7 +242,7 @@ function ProductForm() {
           ) : null}
           <View style={styles.priceBox}>
             <Text style={styles.priceLabel}>Qiimaha kama dambaysta ah</Text>
-            <Text style={styles.price}>{finalPrice}</Text>
+            <Text style={styles.price}>${finalPrice}</Text>
           </View>
           <Field label="Stock (xabo)" value={form.stock} onChangeText={(value) => change("stock", value)} keyboardType="numeric" />
           <View style={styles.switchRow}>

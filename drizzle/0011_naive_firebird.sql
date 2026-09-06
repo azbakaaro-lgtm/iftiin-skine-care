@@ -1,0 +1,1 @@
+ALTER TABLE `storeProducts` ADD `usageInstructions` text;

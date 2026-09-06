@@ -11,11 +11,11 @@ import { trpc } from "@/lib/trpc";
 // address") or any image host. Exactly 5 keeps the carousel dots tidy, but
 // you can add or remove entries freely.
 const HERO_IMAGES: string[] = [
-  "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=900&q=80",
-  "https://images.unsplash.com/photo-1571875257727-256c39da42af?w=900&q=80",
-  "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&q=80",
-  "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&q=80",
-  "https://images.unsplash.com/photo-1512207736890-6ffc32c6dfe2?w=900&q=80",
+  "https://images.unsplash.com/photo-1648203276014-20f97ba1f817?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1670201203208-055d6d79db4a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1679584169621-db3aa6c0fbd6?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1580870069867-74c57ee1bb07?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1498843053639-170ff2122f35?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
 ];
 
 function HeroCarousel() {

@@ -37,6 +37,10 @@ export const storeProducts = mysqlTable("storeProducts", {
   imageUrl: text("imageUrl"),
   category: varchar("category", { length: 100 }).notNull(),
   description: text("description"),
+  // Text read off the product's packaging (e.g. "ku mari sida ku qoran
+  // baakadka") — captured via AI photo-scan or typed/edited by the store
+  // admin, and shown to customers on the product detail page.
+  usageInstructions: text("usageInstructions"),
   originalPrice: int("originalPrice").notNull(),
   discountType: mysqlEnum("discountType", ["none", "percentage", "fixed"]).default("none").notNull(),
   discountValue: int("discountValue").default(0).notNull(),

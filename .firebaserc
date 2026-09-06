@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "iftiin-skine-care"
-  }
+  },
+  "targets": {
+    "iftiin-skine-care": {
+      "hosting": {
+        "app": [
+          "iftiin-skin-care"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

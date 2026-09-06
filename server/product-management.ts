@@ -4,7 +4,7 @@ import { storagePut } from "./storage";
 import { getDb } from "./db";
 
 export type DiscountType = "none" | "percentage" | "fixed";
-export type ProductInput = { name: string; brand: string; category: string; description?: string | null; originalPrice: number; discountType: DiscountType; discountValue: number; stock: number; availability: boolean; imageData?: string | null };
+export type ProductInput = { name: string; brand: string; category: string; description?: string | null; usageInstructions?: string | null; originalPrice: number; discountType: DiscountType; discountValue: number; stock: number; availability: boolean; imageData?: string | null };
 
 export function finalSellingPrice(originalPrice: number, discountType: DiscountType, discountValue: number) {
   const original = Math.max(0, Math.round(originalPrice));
@@ -34,7 +34,7 @@ export async function createProductForStore(storeAdminId: number, input: Product
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
   const imageUrl = await uploadProductImage(storeAdminId, input.imageData);
-  const values: InsertStoreProduct = { storeAdminId, name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(), description: input.description?.trim() || null, imageUrl, originalPrice: Math.round(input.originalPrice), discountType: input.discountType, discountValue: Math.round(input.discountValue), finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue), stock: Math.max(0, Math.round(input.stock)), availability: input.availability };
+  const values: InsertStoreProduct = { storeAdminId, name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(), description: input.description?.trim() || null, usageInstructions: input.usageInstructions?.trim() || null, imageUrl, originalPrice: Math.round(input.originalPrice), discountType: input.discountType, discountValue: Math.round(input.discountValue), finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue), stock: Math.max(0, Math.round(input.stock)), availability: input.availability };
   const result = await db.insert(storeProducts).values(values);
   const created = await db.select().from(storeProducts).where(eq(storeProducts.id, Number(result[0].insertId))).limit(1);
   if (!created[0]) throw new Error("Product-ka lama kaydin karo.");
@@ -65,7 +65,7 @@ export async function updateProductForStore(storeAdminId: number, productId: num
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
   const uploaded = await uploadProductImage(storeAdminId, input.imageData);
-  await db.update(storeProducts).set({ name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(), description: input.description?.trim() || null, imageUrl: uploaded ?? current.imageUrl, originalPrice: Math.round(input.originalPrice), discountType: input.discountType, discountValue: Math.round(input.discountValue), finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue), stock: Math.max(0, Math.round(input.stock)), availability: input.availability }).where(eq(storeProducts.id, productId));
+  await db.update(storeProducts).set({ name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(), description: input.description?.trim() || null, usageInstructions: input.usageInstructions?.trim() || null, imageUrl: uploaded ?? current.imageUrl, originalPrice: Math.round(input.originalPrice), discountType: input.discountType, discountValue: Math.round(input.discountValue), finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue), stock: Math.max(0, Math.round(input.stock)), availability: input.availability }).where(eq(storeProducts.id, productId));
   const updated = await ownedProduct(storeAdminId, productId);
   return mappedProduct(updated);
 }

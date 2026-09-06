@@ -78,6 +78,13 @@
       "when": 1787658353392,
       "tag": "0010_melodic_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1788678067329,
+      "tag": "0011_naive_firebird",
+      "breakpoints": true
     }
   ]
 }

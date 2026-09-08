@@ -125,3 +125,33 @@ export async function markSignedIn(id: number) {
   if (!db) return;
   await db.update(phaseOneAccounts).set({ lastSignedIn: new Date() }).where(eq(phaseOneAccounts.id, id));
 }
+
+// --- Password reset ---
+// Always returns a generic success message regardless of whether the email
+// exists, so the endpoint can't be used to discover which emails are
+// registered. If the account exists, a random 1-hour token is stored and
+// the caller (the router) is responsible for emailing the reset link.
+export async function startPasswordReset(email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
+  const normalizedEmail = email.trim().toLowerCase();
+  const account = (await db.select().from(phaseOneAccounts).where(eq(phaseOneAccounts.email, normalizedEmail)).limit(1))[0];
+  if (!account) return null;
+  const token = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  await db.update(phaseOneAccounts).set({ resetToken: token, resetTokenExpiresAt: expiresAt }).where(eq(phaseOneAccounts.id, account.id));
+  return { token, account };
+}
+
+export async function completePasswordReset(token: string, newPassword: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
+  const account = (await db.select().from(phaseOneAccounts).where(eq(phaseOneAccounts.resetToken, token)).limit(1))[0];
+  if (!account || !account.resetTokenExpiresAt || account.resetTokenExpiresAt.getTime() < Date.now()) {
+    throw new Error("Link-gan furaha sirta ah waa dhacay ama waa qalad. Dalbo mid cusub.");
+  }
+  await db.update(phaseOneAccounts).set({ passwordHash: hashPassword(newPassword), resetToken: null, resetTokenExpiresAt: null }).where(eq(phaseOneAccounts.id, account.id));
+  const updated = await accountById(account.id);
+  if (!updated) throw new Error("Akoonka lama helin.");
+  return updated;
+}

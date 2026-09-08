@@ -51,7 +51,7 @@ export default function RootLayout() {
             <CartProvider>
               <CareProvider>
                 <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="index" /><Stack.Screen name="login" /><Stack.Screen name="create-store-account" /><Stack.Screen name="create-customer-account" /><Stack.Screen name="admin-bootstrap" />
+                  <Stack.Screen name="index" /><Stack.Screen name="login" /><Stack.Screen name="forgot-password" /><Stack.Screen name="reset-password" /><Stack.Screen name="create-store-account" /><Stack.Screen name="create-customer-account" /><Stack.Screen name="admin-bootstrap" />
                   <Stack.Screen name="super-admin-dashboard" /><Stack.Screen name="super-admin-stores" /><Stack.Screen name="super-admin-customers" /><Stack.Screen name="super-admin-products" /><Stack.Screen name="super-admin-orders" /><Stack.Screen name="super-admin-payments" /><Stack.Screen name="super-admin-payment-settings" />
                   <Stack.Screen name="store-admin-dashboard" /><Stack.Screen name="store-products" /><Stack.Screen name="store-orders" /><Stack.Screen name="store-commissions" /><Stack.Screen name="product-form" /><Stack.Screen name="delivery-settings" /><Stack.Screen name="store-payment-settings" />
                   <Stack.Screen name="customer-home" /><Stack.Screen name="skin-journey" /><Stack.Screen name="skin-results" /><Stack.Screen name="skin-routine" /><Stack.Screen name="daily-skin-scan" /><Stack.Screen name="skin-progress" /><Stack.Screen name="customer-stores" /><Stack.Screen name="customer-store" /><Stack.Screen name="product-details" /><Stack.Screen name="cart" /><Stack.Screen name="order-payment" /><Stack.Screen name="my-orders" /><Stack.Screen name="order-detail" />

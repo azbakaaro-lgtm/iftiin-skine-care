@@ -24,6 +24,10 @@ export const phaseOneAccounts = mysqlTable("phaseOneAccounts", {
   passwordHash: varchar("passwordHash", { length: 255 }),
   location: varchar("location", { length: 255 }),
   ownerOpenId: varchar("ownerOpenId", { length: 64 }).unique(),
+  // Password-reset flow: a random token + expiry set when the account
+  // requests a reset email, cleared once used or expired.
+  resetToken: varchar("resetToken", { length: 128 }),
+  resetTokenExpiresAt: timestamp("resetTokenExpiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

@@ -85,6 +85,13 @@
       "when": 1788678067329,
       "tag": "0011_naive_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1788873850055,
+      "tag": "0012_fluffy_wilson_fisk",
+      "breakpoints": true
     }
   ]
 }

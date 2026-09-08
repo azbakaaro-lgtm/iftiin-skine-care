@@ -4,12 +4,13 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { analyzeFacePhoto } from "./face-analysis";
 import { analyzeProductPhotos } from "./product-scanner";
-import { changePasswordForAccount, changeStoreStatus, createAccount, findAccount, hashPassword, issuePhaseSession, listAccounts, markSignedIn, requireRole, setPrivateSuperAdminCredential, toPublicAccount, verifyPassword, verifyPhaseSession } from "./phase1-auth";
+import { changePasswordForAccount, changeStoreStatus, completePasswordReset, createAccount, findAccount, hashPassword, issuePhaseSession, listAccounts, markSignedIn, requireRole, setPrivateSuperAdminCredential, startPasswordReset, toPublicAccount, verifyPassword, verifyPhaseSession } from "./phase1-auth";
+import { sendEmail } from "./_core/email";
 import { ENV } from "./_core/env";
 import { createProductForStore, deleteProductForStore, getDeliveryForStore, listAllProductsForSuperAdmin, listProductsForStore, saveDeliveryForStore, updateProductForStore } from "./product-management";
 import { commissionHistoryCsv, commissionSummaryForStore, getStorePaymentSettings, getSuperAdminPaymentSettings, markCustomerPaymentFailed, markCustomerPaymentSent, paymentDashboard, paymentOptionsForStore, reviewCommissionPayment, reviewPaymentForStore, saveStorePaymentSettings, saveSuperAdminPaymentSettings, submitCommissionPayment } from "./payments";
 import { createCustomerSkinJourney, deleteMySkinJourney, getFullSkinJourneyForCustomer, getSkinJourneyForCustomer, latestUnlockedSkinJourney, listMySkinJourneys, unlockedSkinJourneyForOrder } from "./skin-journey";
-import { cancelCustomerPendingOrder, createCustomerOrder, customerProductDetail, listActiveStores, listAllOrders, listCustomerOrders, listCustomerProducts, listFeaturedProducts, listInAppNotifications, listStoreOrders, markAllNotificationsRead, markNotificationRead, notificationSummary, orderDetailForAccount, updateStoreOrderStatus } from "./shopping";
+import { cancelCustomerPendingOrder, createCustomerOrder, customerProductDetail, listActiveStores, listAllOrders, listCustomerOrders, listCustomerProducts, listFeaturedProducts, listInAppNotifications, listStoreOrders, markAllNotificationsRead, markNotificationRead, notificationSummary, orderDetailForAccount, searchAllProducts, updateStoreOrderStatus } from "./shopping";
 import { scanProductLabel } from "./product-label-scanner";
 
 const compactImage = z.string().regex(/^data:image\/(jpeg|jpg|png);base64,/).max(360000);
@@ -77,6 +78,24 @@ export const appRouter = router({
     customerStores: publicProcedure.input(tokenInput.extend({ search: z.string().max(180).optional() })).query(async ({ input }) => { await roleOrError(input.sessionToken, "customer"); return listActiveStores(input.search); }),
     customerProducts: publicProcedure.input(tokenInput.extend({ storeAdminId: z.number().int().positive() }).extend(shoppingFilter.shape)).query(async ({ input }) => { await roleOrError(input.sessionToken, "customer"); return listCustomerProducts(input.storeAdminId, input); }),
     featuredProducts: publicProcedure.query(async () => listFeaturedProducts()),
+    searchProducts: publicProcedure.input(z.object({ query: z.string().min(1).max(180) })).query(async ({ input }) => searchAllProducts(input.query)),
+    forgotPassword: publicProcedure.input(z.object({ email: z.string().email().max(320) })).mutation(async ({ input }) => {
+      const result = await startPasswordReset(input.email);
+      if (result) {
+        const link = `${ENV.webAppUrl.replace(/\/$/, "")}/reset-password?token=${result.token}`;
+        await sendEmail(
+          result.account.email,
+          "Dib u deji furahaaga sirta ah — Iftiin Skin Care",
+          `<p>Salaan ${result.account.fullName},</p><p>Codso ayaad ka dhigatay in furahaaga sirta ah la beddelo. Guji link-an si aad u dejiso furaha cusub (wuxuu socon doonaa 1 saac):</p><p><a href="${link}">${link}</a></p><p>Haddii aadan codsanin tan, iska indha tir email-kan.</p>`,
+        );
+      }
+      // Always the same response, whether or not the email exists.
+      return { success: true } as const;
+    }),
+    resetPassword: publicProcedure.input(z.object({ token: z.string().min(10), password })).mutation(async ({ input }) => {
+      const account = await completePasswordReset(input.token, input.password);
+      return { account: toPublicAccount(account), sessionToken: await issuePhaseSession(account) };
+    }),
     customerProductDetail: publicProcedure.input(tokenInput.extend({ productId: z.number().int().positive() })).query(async ({ input }) => { await roleOrError(input.sessionToken, "customer"); return customerProductDetail(input.productId); }),
     paymentOptions: publicProcedure.input(tokenInput.extend({ storeAdminId: z.number().int().positive() })).query(async ({ input }) => { await roleOrError(input.sessionToken, "customer"); return paymentOptionsForStore(input.storeAdminId); }),
     createOrder: publicProcedure.input(tokenInput.extend({ items: z.array(z.object({ productId: z.number().int().positive(), quantity: z.number().int().min(1).max(99) })).min(1).max(30), deliveryArea: z.string().max(255).optional().nullable(), paymentMethod: z.enum(["evc_plus", "edahab", "premier_wallet", "merchant"]), skinJourneyId: z.number().int().positive().optional().nullable() })).mutation(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return createCustomerOrder(account.id, input.items, input.deliveryArea, input.paymentMethod, input.skinJourneyId); }),

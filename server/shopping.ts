@@ -41,6 +41,22 @@ export async function listFeaturedProducts(limit = 12) {
   return rows.map((row) => productView(row.product, row.storeName));
 }
 
+// Public search across every active store's in-stock products — used by
+// the landing page's global search box, no session required.
+export async function searchAllProducts(query: string, limit = 30) {
+  const db = await getDb();
+  if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
+  const q = `%${query.trim()}%`;
+  const rows = await db
+    .select({ product: storeProducts, storeName: phaseOneAccounts.storeName })
+    .from(storeProducts)
+    .innerJoin(phaseOneAccounts, eq(storeProducts.storeAdminId, phaseOneAccounts.id))
+    .where(and(eq(storeProducts.availability, true), eq(phaseOneAccounts.status, "active"), or(like(storeProducts.name, q), like(storeProducts.brand, q), like(storeProducts.category, q))!))
+    .orderBy(desc(storeProducts.createdAt))
+    .limit(limit);
+  return rows.map((row) => productView(row.product, row.storeName));
+}
+
 export async function customerProductDetail(productId: number) {
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");

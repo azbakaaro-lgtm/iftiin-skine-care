@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Page, palette, PrimaryButton, SecondaryButton } from "@/components/iftiin-ui";
 import { routeForRole, usePhaseSession } from "@/lib/phase1-session";
 import { trpc } from "@/lib/trpc";
@@ -11,11 +11,11 @@ import { trpc } from "@/lib/trpc";
 // address") or any image host. Exactly 5 keeps the carousel dots tidy, but
 // you can add or remove entries freely.
 const HERO_IMAGES: string[] = [
-  "https://images.unsplash.com/photo-1648203276014-20f97ba1f817?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1670201203208-055d6d79db4a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1679584169621-db3aa6c0fbd6?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1580870069867-74c57ee1bb07?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  "https://images.unsplash.com/photo-1498843053639-170ff2122f35?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=900&q=80",
+  "https://images.unsplash.com/photo-1571875257727-256c39da42af?w=900&q=80",
+  "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=900&q=80",
+  "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=900&q=80",
+  "https://images.unsplash.com/photo-1512207736890-6ffc32c6dfe2?w=900&q=80",
 ];
 
 function HeroCarousel() {
@@ -62,6 +62,11 @@ function money(cents: number) {
 export default function LandingScreen() {
   const { session, loaded } = usePhaseSession();
   const featured = trpc.phase1.featuredProducts.useQuery();
+  const [query, setQuery] = useState("");
+  const trimmedQuery = query.trim();
+  const search = trpc.phase1.searchProducts.useQuery({ query: trimmedQuery }, { enabled: trimmedQuery.length >= 2 });
+  const showingSearch = trimmedQuery.length >= 2;
+  const products = showingSearch ? search.data : featured.data;
 
   useEffect(() => {
     if (loaded && session) router.replace(routeForRole(session.account.role) as never);
@@ -83,22 +88,37 @@ export default function LandingScreen() {
         <HeroCarousel />
 
         <View style={styles.body}>
-          <Text style={styles.headline}>Maqaarkaaga u daryeel si khibrad leh</Text>
-          <Text style={styles.subline}>Dukaamo la ansixiyay, alaab asli ah, iyo Skin Journey gaarka ah oo kuu doorta waxa ku habboon.</Text>
-
-          <View style={styles.ctaRow}>
-            <PrimaryButton label="Soo gal" icon="login" onPress={() => router.push("/login" as never)} />
-            <SecondaryButton label="Isdiiwaan geli" icon="person-add" onPress={() => router.push("/create-customer-account" as never)} />
+          <View style={styles.searchBox}>
+            <MaterialIcons name="search" size={20} color={palette.muted} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Raadi alaab, brand, ama nooc..."
+              placeholderTextColor="#918FA0"
+              style={styles.searchInput}
+            />
           </View>
 
-          <View style={styles.adBanner}>
-            <MaterialIcons name="local-offer" size={20} color={palette.purple} />
-            <Text style={styles.adText}>Dukaamada cusub oo kasta iyo alaabtooda — dhammaan halkan ayaad ka arki kartaa, ka hor intaadan akoon abuurin.</Text>
-          </View>
+          {!showingSearch ? (
+            <>
+              <Text style={styles.headline}>Maqaarkaaga u daryeel si khibrad leh</Text>
+              <Text style={styles.subline}>Dukaamo la ansixiyay, alaab asli ah, iyo Skin Journey gaarka ah oo kuu doorta waxa ku habboon.</Text>
 
-          <Text style={styles.sectionTitle}>Alaabta dukaamada</Text>
+              <View style={styles.ctaRow}>
+                <PrimaryButton label="Soo gal" icon="login" onPress={() => router.push("/login" as never)} />
+                <SecondaryButton label="Isdiiwaan geli" icon="person-add" onPress={() => router.push("/create-customer-account" as never)} />
+              </View>
+
+              <View style={styles.adBanner}>
+                <MaterialIcons name="local-offer" size={20} color={palette.purple} />
+                <Text style={styles.adText}>Dukaamada cusub oo kasta iyo alaabtooda — dhammaan halkan ayaad ka arki kartaa, ka hor intaadan akoon abuurin.</Text>
+              </View>
+            </>
+          ) : null}
+
+          <Text style={styles.sectionTitle}>{showingSearch ? `Natiijada raadinta "${trimmedQuery}"` : "Alaabta dukaamada"}</Text>
           <View style={styles.productGrid}>
-            {(featured.data ?? []).map((product) => (
+            {(products ?? []).map((product) => (
               <View key={product.id} style={styles.productCard}>
                 {product.imageUrl ? (
                   <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
@@ -112,8 +132,8 @@ export default function LandingScreen() {
                 <Text style={styles.productPrice}>{money(product.finalPrice)}</Text>
               </View>
             ))}
-            {featured.data && featured.data.length === 0 ? (
-              <Text style={styles.emptyText}>Weli alaab lagama darin dukaamada.</Text>
+            {products && products.length === 0 ? (
+              <Text style={styles.emptyText}>{showingSearch ? "Wax natiijo ah lama helin." : "Weli alaab lagama darin dukaamada."}</Text>
             ) : null}
           </View>
 
@@ -140,6 +160,8 @@ const styles = StyleSheet.create({
   dotActive: { backgroundColor: palette.purple, width: 18 },
 
   body: { paddingHorizontal: 20, paddingTop: 22, gap: 14 },
+  searchBox: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: palette.line, borderRadius: 14, paddingHorizontal: 13, height: 48 },
+  searchInput: { flex: 1, color: palette.ink, fontSize: 14, height: "100%" },
   headline: { color: palette.ink, fontSize: 24, fontWeight: "900", lineHeight: 30 },
   subline: { color: palette.muted, fontSize: 14, lineHeight: 21 },
   ctaRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },

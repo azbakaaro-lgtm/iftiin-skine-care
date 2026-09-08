@@ -24,4 +24,11 @@ export const ENV = {
   // Optional outbound notification webhook (e.g. Slack/Discord incoming webhook).
   // If unset, notifications are just logged to the console.
   notifyWebhookUrl: process.env.NOTIFY_WEBHOOK_URL ?? "",
+
+  // Password-reset emails (via Resend, https://resend.com — free tier).
+  // If unset, reset emails are just logged to the console instead of sent.
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  // Public web URL the reset-password link should point at.
+  webAppUrl: process.env.WEB_APP_URL ?? "https://iftiin-skine-care.web.app",
 };

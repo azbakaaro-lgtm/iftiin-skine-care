@@ -12,6 +12,7 @@ import { trpc } from "@/lib/trpc";
 
 const categories = ["Cleanser", "Moisturizer", "Serum", "Sunscreen", "Treatment", "Kale"];
 type DiscountType = "none" | "percentage" | "fixed";
+type GalleryItem = { url?: string; base64?: string; preview: string };
 type Form = {
   name: string;
   brand: string;
@@ -25,8 +26,9 @@ type Form = {
   availability: boolean;
   imageData?: string;
   imagePreview?: string;
+  gallery: GalleryItem[];
 };
-const initial: Form = { name: "", brand: "", category: "Cleanser", description: "", usageInstructions: "", originalPrice: "", discountType: "none", discountValue: "0", stock: "0", availability: true };
+const initial: Form = { name: "", brand: "", category: "Cleanser", description: "", usageInstructions: "", originalPrice: "", discountType: "none", discountValue: "0", stock: "0", availability: true, gallery: [] };
 
 export default function ProductFormScreen() {
   return (
@@ -63,6 +65,7 @@ function ProductForm() {
         stock: String(product.stock),
         availability: product.availability,
         imagePreview: product.imageUrl ? `${getApiBaseUrl()}${product.imageUrl}` : undefined,
+        gallery: (product.galleryImages ?? []).map((url) => ({ url, preview: `${getApiBaseUrl()}${url}` })),
       });
     }
   }, [product]);
@@ -145,6 +148,37 @@ function ProductForm() {
     ]);
   }
 
+  const MAX_GALLERY = 4;
+
+  async function addGalleryImage(camera: boolean) {
+    if (form.gallery.length >= MAX_GALLERY) {
+      showAlert("Xad la gaadhay", `Waxaad ku dari kartaa ilaa ${MAX_GALLERY} sawir oo dheeraad ah, marka hore tirtir mid ka mid ah.`);
+      return;
+    }
+    if (camera) {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (permission.status !== "granted") {
+        showAlert("Oggolaansho loo baahan yahay", "Kamaradda waxaa loo isticmaalaa oo keliya sawirka product-ka.");
+        return;
+      }
+    }
+    const result = camera
+      ? await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.8 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.8, base64: true });
+    if (result.canceled) return;
+    try {
+      const ready = await ImageManipulator.manipulateAsync(result.assets[0].uri, [{ resize: { width: 800 } }], { compress: 0.68, format: ImageManipulator.SaveFormat.JPEG, base64: true });
+      if (!ready.base64) throw new Error("Sawirka lama diyaarin karo.");
+      change("gallery", [...form.gallery, { base64: `data:image/jpeg;base64,${ready.base64}`, preview: ready.uri }]);
+    } catch (issue) {
+      showAlert("Sawirka lama gelin karo", issue instanceof Error ? issue.message : "Mar kale isku day.");
+    }
+  }
+
+  function removeGalleryImage(index: number) {
+    change("gallery", form.gallery.filter((_, i) => i !== index));
+  }
+
   async function submit() {
     setError("");
     const payload = {
@@ -160,6 +194,8 @@ function ProductForm() {
       stock: Math.max(0, Math.round(Number(form.stock) || 0)),
       availability: form.availability,
       imageData: form.imageData ?? null,
+      additionalImagesData: form.gallery.filter((item) => item.base64).map((item) => item.base64!),
+      keepAdditionalImages: form.gallery.filter((item) => item.url).map((item) => item.url!),
     };
     if (!payload.name || !payload.brand || !Number.isFinite(payload.originalPrice) || payload.originalPrice < 0) {
       setError("Buuxi magaca, brand-ka, iyo qiimaha saxda ah.");
@@ -193,6 +229,31 @@ function ProductForm() {
               <View style={{ flex: 1 }}><SecondaryButton label="Gallery" icon="photo-library" onPress={() => choose(false)} /></View>
             </View>
             {loadingImage ? <Text style={styles.loading}>Sawirka waa la diyaarinayaa...</Text> : null}
+          </View>
+        </Card>
+
+        <Card style={styles.galleryCard}>
+          <Text style={styles.imageTitle}>Sawiro dheeraad ah (ilaa {MAX_GALLERY})</Text>
+          <Text style={styles.imageText}>Ku dar sawiro kale oo product-ka ah — macaamiisha ayaa u tuurayi kara si ay u arkaan dhinacyo kala duwan.</Text>
+          <View style={styles.galleryRow}>
+            {form.gallery.map((item, index) => (
+              <View key={item.url ?? item.base64 ?? index} style={styles.galleryThumbWrap}>
+                <Image source={{ uri: item.preview }} style={styles.galleryThumb} />
+                <Pressable onPress={() => removeGalleryImage(index)} style={styles.galleryRemove}>
+                  <MaterialIcons name="close" size={14} color="#FFFFFF" />
+                </Pressable>
+              </View>
+            ))}
+            {form.gallery.length < MAX_GALLERY ? (
+              <View style={styles.galleryAddRow}>
+                <Pressable onPress={() => addGalleryImage(true)} style={styles.galleryAddButton}>
+                  <MaterialIcons name="photo-camera" size={20} color={palette.purple} />
+                </Pressable>
+                <Pressable onPress={() => addGalleryImage(false)} style={styles.galleryAddButton}>
+                  <MaterialIcons name="photo-library" size={20} color={palette.purple} />
+                </Pressable>
+              </View>
+            ) : null}
           </View>
         </Card>
 
@@ -276,6 +337,13 @@ function Field({ label, multiline, ...props }: { label: string; value: string; o
 const styles = StyleSheet.create({
   scroll: { gap: 14, paddingBottom: 30 },
   imageCard: { flexDirection: "row", gap: 12 },
+  galleryCard: { gap: 8 },
+  galleryRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 4 },
+  galleryThumbWrap: { width: 70, height: 70, borderRadius: 14 },
+  galleryThumb: { width: "100%", height: "100%", borderRadius: 14 },
+  galleryRemove: { position: "absolute", top: -6, right: -6, width: 22, height: 22, borderRadius: 11, backgroundColor: "#B84A5C", alignItems: "center", justifyContent: "center" },
+  galleryAddRow: { flexDirection: "row", gap: 8 },
+  galleryAddButton: { width: 70, height: 70, borderRadius: 14, borderWidth: 1, borderColor: palette.line, borderStyle: "dashed", alignItems: "center", justifyContent: "center", backgroundColor: "#F8F7FC" },
   preview: { width: 102, height: 102, borderRadius: 20, backgroundColor: palette.lavender, overflow: "hidden", alignItems: "center", justifyContent: "center" },
   previewImage: { width: "100%", height: "100%" },
   imageActions: { flex: 1, gap: 5 },

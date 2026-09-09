@@ -4,7 +4,26 @@ import { storagePut } from "./storage";
 import { getDb } from "./db";
 
 export type DiscountType = "none" | "percentage" | "fixed";
-export type ProductInput = { name: string; brand: string; category: string; description?: string | null; usageInstructions?: string | null; originalPrice: number; discountType: DiscountType; discountValue: number; stock: number; availability: boolean; imageData?: string | null };
+export type ProductInput = {
+  name: string;
+  brand: string;
+  category: string;
+  description?: string | null;
+  usageInstructions?: string | null;
+  originalPrice: number;
+  discountType: DiscountType;
+  discountValue: number;
+  stock: number;
+  availability: boolean;
+  imageData?: string | null;
+  // New extra photos to upload (base64 data URLs), beyond the cover image.
+  additionalImagesData?: string[] | null;
+  // Existing gallery URLs to keep (update only) — anything from the
+  // current product's gallery not listed here is dropped.
+  keepAdditionalImages?: string[] | null;
+};
+
+const MAX_GALLERY_IMAGES = 4;
 
 export function finalSellingPrice(originalPrice: number, discountType: DiscountType, discountValue: number) {
   const original = Math.max(0, Math.round(originalPrice));
@@ -26,15 +45,59 @@ async function uploadProductImage(storeAdminId: number, imageData?: string | nul
   return result.url;
 }
 
+async function uploadGalleryImages(storeAdminId: number, imagesData: string[] | null | undefined) {
+  const limited = (imagesData ?? []).slice(0, MAX_GALLERY_IMAGES);
+  const urls: string[] = [];
+  for (const data of limited) {
+    const url = await uploadProductImage(storeAdminId, data);
+    if (url) urls.push(url);
+  }
+  return urls;
+}
+
+function parseGallery(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 function mappedProduct(product: typeof storeProducts.$inferSelect, storeName?: string | null) {
-  return { ...product, storeName: storeName ?? null, finalPrice: Number(product.finalPrice), originalPrice: Number(product.originalPrice), discountValue: Number(product.discountValue), stock: Number(product.stock) };
+  return {
+    ...product,
+    storeName: storeName ?? null,
+    finalPrice: Number(product.finalPrice),
+    originalPrice: Number(product.originalPrice),
+    discountValue: Number(product.discountValue),
+    stock: Number(product.stock),
+    galleryImages: parseGallery(product.additionalImages),
+  };
 }
 
 export async function createProductForStore(storeAdminId: number, input: ProductInput) {
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
   const imageUrl = await uploadProductImage(storeAdminId, input.imageData);
-  const values: InsertStoreProduct = { storeAdminId, name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(), description: input.description?.trim() || null, usageInstructions: input.usageInstructions?.trim() || null, imageUrl, originalPrice: Math.round(input.originalPrice), discountType: input.discountType, discountValue: Math.round(input.discountValue), finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue), stock: Math.max(0, Math.round(input.stock)), availability: input.availability };
+  const galleryUrls = await uploadGalleryImages(storeAdminId, input.additionalImagesData);
+  const values: InsertStoreProduct = {
+    storeAdminId,
+    name: input.name.trim(),
+    brand: input.brand.trim(),
+    category: input.category.trim(),
+    description: input.description?.trim() || null,
+    usageInstructions: input.usageInstructions?.trim() || null,
+    imageUrl,
+    additionalImages: galleryUrls.length ? JSON.stringify(galleryUrls) : null,
+    originalPrice: Math.round(input.originalPrice),
+    discountType: input.discountType,
+    discountValue: Math.round(input.discountValue),
+    finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue),
+    stock: Math.max(0, Math.round(input.stock)),
+    availability: input.availability,
+  };
   const result = await db.insert(storeProducts).values(values);
   const created = await db.select().from(storeProducts).where(eq(storeProducts.id, Number(result[0].insertId))).limit(1);
   if (!created[0]) throw new Error("Product-ka lama kaydin karo.");
@@ -65,7 +128,27 @@ export async function updateProductForStore(storeAdminId: number, productId: num
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
   const uploaded = await uploadProductImage(storeAdminId, input.imageData);
-  await db.update(storeProducts).set({ name: input.name.trim(), brand: input.brand.trim(), category: input.category.trim(), description: input.description?.trim() || null, usageInstructions: input.usageInstructions?.trim() || null, imageUrl: uploaded ?? current.imageUrl, originalPrice: Math.round(input.originalPrice), discountType: input.discountType, discountValue: Math.round(input.discountValue), finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue), stock: Math.max(0, Math.round(input.stock)), availability: input.availability }).where(eq(storeProducts.id, productId));
+
+  const existingGallery = parseGallery(current.additionalImages);
+  const kept = (input.keepAdditionalImages ?? []).filter((url) => existingGallery.includes(url));
+  const newlyUploaded = await uploadGalleryImages(storeAdminId, input.additionalImagesData);
+  const galleryUrls = [...kept, ...newlyUploaded].slice(0, MAX_GALLERY_IMAGES);
+
+  await db.update(storeProducts).set({
+    name: input.name.trim(),
+    brand: input.brand.trim(),
+    category: input.category.trim(),
+    description: input.description?.trim() || null,
+    usageInstructions: input.usageInstructions?.trim() || null,
+    imageUrl: uploaded ?? current.imageUrl,
+    additionalImages: galleryUrls.length ? JSON.stringify(galleryUrls) : null,
+    originalPrice: Math.round(input.originalPrice),
+    discountType: input.discountType,
+    discountValue: Math.round(input.discountValue),
+    finalPrice: finalSellingPrice(input.originalPrice, input.discountType, input.discountValue),
+    stock: Math.max(0, Math.round(input.stock)),
+    availability: input.availability,
+  }).where(eq(storeProducts.id, productId));
   const updated = await ownedProduct(storeAdminId, productId);
   return mappedProduct(updated);
 }

@@ -12,7 +12,17 @@ export function storeCanReceiveNewOrders(status: "pending" | "active" | "restric
 export const statusLabels: Record<OrderStatus, string> = { pending: "Sugaya lacag-bixin", payment_confirmed: "Lacagta waa la xaqiijiyey", processing: "Hawlgal ayaa socda", ready: "Diyaar", out_for_delivery: "Wuxuu ku jiraa delivery", delivered: "La geeyey", completed: "Waa la dhammaystiray", cancelled: "La joojiyey", confirmed: "La xaqiijiyey (hore)", preparing: "Diyaar garow (hore)" };
 async function addNotification(recipientId: number, orderId: number, title: string, body: string) { const db = await getDb(); if (!db) throw new Error("Kaydka xogta lama heli karo hadda."); await db.insert(inAppNotifications).values({ recipientId, orderId, title, body, isRead: false }); }
 
-function productView(product: typeof storeProducts.$inferSelect, storeName: string | null) { return { ...product, storeName, originalPrice: Number(product.originalPrice), discountValue: Number(product.discountValue), finalPrice: Number(product.finalPrice), stock: Number(product.stock) }; }
+function parseGallery(raw: string | null): string[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function productView(product: typeof storeProducts.$inferSelect, storeName: string | null) { return { ...product, storeName, originalPrice: Number(product.originalPrice), discountValue: Number(product.discountValue), finalPrice: Number(product.finalPrice), stock: Number(product.stock), galleryImages: parseGallery(product.additionalImages) }; }
 
 export async function listActiveStores(search?: string) {
   const db = await getDb();

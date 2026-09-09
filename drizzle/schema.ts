@@ -39,6 +39,9 @@ export const storeProducts = mysqlTable("storeProducts", {
   name: varchar("name", { length: 180 }).notNull(),
   brand: varchar("brand", { length: 160 }).notNull(),
   imageUrl: text("imageUrl"),
+  // Extra photos beyond the cover image (JSON array of storage URLs, up to
+  // 4) — shown as a swipeable gallery on the product detail page.
+  additionalImages: text("additionalImages"),
   category: varchar("category", { length: 100 }).notNull(),
   description: text("description"),
   // Text read off the product's packaging (e.g. "ku mari sida ku qoran

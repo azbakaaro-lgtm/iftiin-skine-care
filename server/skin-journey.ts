@@ -92,9 +92,11 @@ export async function latestUnlockedSkinJourney(customerId: number) {
   return rows[0] ? getFullSkinJourneyForCustomer(customerId, rows[0].id) : null;
 }
 
-export async function unlockedSkinJourneyForOrder(customerId: number, orderId: number) {
+
+// Marka lacag-bixinta dalabka la xaqiijiyo, u fur (unlock) skin journey-ga
+// dalabkaas la xidhay si macmiilku u arko natiijada buuxda.
+export async function unlockSkinJourneyForOrder(customerId: number, orderId: number) {
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
-  const row = (await db.select().from(customerSkinJourneys).where(and(eq(customerSkinJourneys.customerId, customerId), eq(customerSkinJourneys.purchaseOrderId, orderId), eq(customerSkinJourneys.status, "unlocked"))).limit(1))[0];
-  return row ? getFullSkinJourneyForCustomer(customerId, row.id) : null;
+  await db.update(customerSkinJourneys).set({ status: "unlocked", unlockedAt: new Date() }).where(and(eq(customerSkinJourneys.customerId, customerId), eq(customerSkinJourneys.purchaseOrderId, orderId)));
 }

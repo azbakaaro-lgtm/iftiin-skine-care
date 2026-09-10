@@ -50,14 +50,11 @@ export async function linkJourneyToOrder(customerId: number, journeyId: number, 
 }
 
 
-// Only the owning customer can list or delete their own scans/journeys —
-// every query below is scoped by customerId, so nobody else (including
-// store admins or the super admin) can see or remove this data.
-export async function listMySkinJourneys(customerId: number) {
+export async function unlockedSkinJourneyForOrder(customerId: number, orderId: number) {
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
-  const rows = await db.select().from(customerSkinJourneys).where(eq(customerSkinJourneys.customerId, customerId)).orderBy(desc(customerSkinJourneys.createdAt));
-  return rows.map((row) => ({ id: row.id, status: row.status, createdAt: row.createdAt, unlockedAt: row.unlockedAt, visual: parseVisual(row.visualJson) }));
+  const row = (await db.select().from(customerSkinJourneys).where(and(eq(customerSkinJourneys.customerId, customerId), eq(customerSkinJourneys.purchaseOrderId, orderId), eq(customerSkinJourneys.status, "unlocked"))).limit(1))[0];
+  return row ? getFullSkinJourneyForCustomer(customerId, row.id) : null;
 }
 
 export async function deleteMySkinJourney(customerId: number, journeyId: number) {

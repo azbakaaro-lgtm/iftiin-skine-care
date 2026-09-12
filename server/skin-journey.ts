@@ -4,7 +4,7 @@ import { getDb } from "./db";
 
 type AnswerValue = string | string[];
 export type JourneyVisual = { calaamado: string[]; caddeyn: "cad" | "qayb ahaan cad" | "aan caddayn"; sooKoobid: string };
-export type JourneyProduct = { id: number; storeAdminId: number; name: string; brand: string; imageUrl: string | null; category: string; description: string | null; originalPrice: number; finalPrice: number; stock: number; availability: boolean };
+export type JourneyProduct = { id: number; storeAdminId: number; name: string; brand: string; imageUrl: string | null; category: string; description: string | null; usageInstructions: string | null; originalPrice: number; finalPrice: number; stock: number; availability: boolean };
 
 function values(answers: Record<string, AnswerValue>, key: string) { const value = answers[key]; return Array.isArray(value) ? value : value ? [value] : []; }
 function preferredCategories(answers: Record<string, AnswerValue>, visual?: JourneyVisual) {
@@ -17,7 +17,7 @@ function preferredCategories(answers: Record<string, AnswerValue>, visual?: Jour
 
 function parseAnswers(raw: string) { try { return JSON.parse(raw) as Record<string, AnswerValue>; } catch { return {}; } }
 function parseVisual(raw: string | null) { try { return raw ? JSON.parse(raw) as JourneyVisual : undefined; } catch { return undefined; } }
-function publicProduct(product: typeof storeProducts.$inferSelect): JourneyProduct { return { id: product.id, storeAdminId: product.storeAdminId, name: product.name, brand: product.brand, imageUrl: product.imageUrl, category: product.category, description: product.description, originalPrice: Number(product.originalPrice), finalPrice: Number(product.finalPrice), stock: Number(product.stock), availability: product.availability }; }
+function publicProduct(product: typeof storeProducts.$inferSelect): JourneyProduct { return { id: product.id, storeAdminId: product.storeAdminId, name: product.name, brand: product.brand, imageUrl: product.imageUrl, category: product.category, description: product.description, usageInstructions: product.usageInstructions, originalPrice: Number(product.originalPrice), finalPrice: Number(product.finalPrice), stock: Number(product.stock), availability: product.availability }; }
 
 export function preliminaryConcerns(answers: Record<string, AnswerValue>, visual?: JourneyVisual) {
   const source = [...(visual?.calaamado ?? []), ...values(answers, "goal"), ...values(answers, "sensitivity")];

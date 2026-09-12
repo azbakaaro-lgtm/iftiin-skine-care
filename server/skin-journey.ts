@@ -57,13 +57,14 @@ export async function unlockedSkinJourneyForOrder(customerId: number, orderId: n
   return row ? getFullSkinJourneyForCustomer(customerId, row.id) : null;
 }
 
-export async function deleteMySkinJourney(customerId: number, journeyId: number) {
+// Only the owning customer can list or delete their own scans/journeys —
+// every query below is scoped by customerId, so nobody else (including
+// store admins or the super admin) can see or remove this data.
+export async function listMySkinJourneys(customerId: number) {
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
-  const row = (await db.select().from(customerSkinJourneys).where(and(eq(customerSkinJourneys.id, journeyId), eq(customerSkinJourneys.customerId, customerId))).limit(1))[0];
-  if (!row) throw new Error("Xogtan lama heli karo ama horeba waa la tirtiray.");
-  await db.delete(customerSkinJourneys).where(and(eq(customerSkinJourneys.id, journeyId), eq(customerSkinJourneys.customerId, customerId)));
-  return { success: true } as const;
+  const rows = await db.select().from(customerSkinJourneys).where(eq(customerSkinJourneys.customerId, customerId)).orderBy(desc(customerSkinJourneys.createdAt));
+  return rows.map((row) => ({ id: row.id, status: row.status, createdAt: row.createdAt, unlockedAt: row.unlockedAt, visual: parseVisual(row.visualJson) }));
 }
 
 export async function getSkinJourneyForCustomer(customerId: number, journeyId: number) {
@@ -96,4 +97,14 @@ export async function unlockSkinJourneyForOrder(customerId: number, orderId: num
   const db = await getDb();
   if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
   await db.update(customerSkinJourneys).set({ status: "unlocked", unlockedAt: new Date() }).where(and(eq(customerSkinJourneys.customerId, customerId), eq(customerSkinJourneys.purchaseOrderId, orderId)));
+}
+
+
+export async function deleteMySkinJourney(customerId: number, journeyId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
+  const row = (await db.select().from(customerSkinJourneys).where(and(eq(customerSkinJourneys.id, journeyId), eq(customerSkinJourneys.customerId, customerId))).limit(1))[0];
+  if (!row) throw new Error("Xogtan lama heli karo ama horeba waa la tirtiray.");
+  await db.delete(customerSkinJourneys).where(and(eq(customerSkinJourneys.id, journeyId), eq(customerSkinJourneys.customerId, customerId)));
+  return { success: true } as const;
 }

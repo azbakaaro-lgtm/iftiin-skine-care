@@ -9,7 +9,7 @@ import { sendEmail } from "./_core/email";
 import { ENV } from "./_core/env";
 import { createProductForStore, deleteProductForStore, getDeliveryForStore, listAllProductsForSuperAdmin, listProductsForStore, saveDeliveryForStore, updateProductForStore } from "./product-management";
 import { commissionHistoryCsv, commissionSummaryForStore, getStorePaymentSettings, getSuperAdminPaymentSettings, markCustomerPaymentFailed, markCustomerPaymentSent, paymentDashboard, paymentOptionsForStore, reviewCommissionPayment, reviewPaymentForStore, saveStorePaymentSettings, saveSuperAdminPaymentSettings, submitCommissionPayment } from "./payments";
-import { createCustomerSkinJourney, deleteMySkinJourney, getFullSkinJourneyForCustomer, getSkinJourneyForCustomer, latestUnlockedSkinJourney, listMySkinJourneys, unlockedSkinJourneyForOrder } from "./skin-journey";
+import { createCustomerSkinJourney, deleteMySkinJourney, getFullSkinJourneyForCustomer, getRoutineProductsForOrder, getSkinJourneyForCustomer, latestUnlockedSkinJourney, listMySkinJourneys, unlockedSkinJourneyForOrder } from "./skin-journey";
 import { cancelCustomerPendingOrder, createCustomerOrder, customerProductDetail, listActiveStores, listAllOrders, listCustomerOrders, listCustomerProducts, listFeaturedProducts, listInAppNotifications, listStoreOrders, markAllNotificationsRead, markNotificationRead, notificationSummary, orderDetailForAccount, searchAllProducts, updateStoreOrderStatus } from "./shopping";
 import { scanProductLabel } from "./product-label-scanner";
 
@@ -117,7 +117,7 @@ export const appRouter = router({
     skinJourney: publicProcedure.input(tokenInput.extend({ journeyId: z.number().int().positive() })).query(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return getSkinJourneyForCustomer(account.id, input.journeyId); }),
     fullSkinJourney: publicProcedure.input(tokenInput.extend({ journeyId: z.number().int().positive() })).query(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return getFullSkinJourneyForCustomer(account.id, input.journeyId); }),
     latestUnlockedSkinJourney: publicProcedure.input(tokenInput).query(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return latestUnlockedSkinJourney(account.id); }),
-    unlockedSkinJourneyForOrder: publicProcedure.input(tokenInput.extend({ orderId: z.number().int().positive() })).query(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return unlockedSkinJourneyForOrder(account.id, input.orderId); }),
+    routineProducts: publicProcedure.input(tokenInput.extend({ orderId: z.number().int().positive() })).query(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return getRoutineProductsForOrder(account.id, input.orderId); }),
     myScans: publicProcedure.input(tokenInput).query(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return listMySkinJourneys(account.id); }),
     deleteMyScan: publicProcedure.input(tokenInput.extend({ journeyId: z.number().int().positive() })).mutation(async ({ input }) => { const account = await roleOrError(input.sessionToken, "customer"); return deleteMySkinJourney(account.id, input.journeyId); }),
     notifications: publicProcedure.input(tokenInput).query(async ({ input }) => { const account = await sessionOrError(input.sessionToken); return listInAppNotifications(account.id); }),

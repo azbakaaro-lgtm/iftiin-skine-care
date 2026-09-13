@@ -1,5 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import { customerSkinJourneys, storeProducts } from "../drizzle/schema";
+import { customerOrderItems, customerOrders, customerSkinJourneys, storeProducts } from "../drizzle/schema";
 import { getDb } from "./db";
 
 type AnswerValue = string | string[];
@@ -107,4 +107,27 @@ export async function deleteMySkinJourney(customerId: number, journeyId: number)
   if (!row) throw new Error("Xogtan lama heli karo ama horeba waa la tirtiray.");
   await db.delete(customerSkinJourneys).where(and(eq(customerSkinJourneys.id, journeyId), eq(customerSkinJourneys.customerId, customerId)));
   return { success: true } as const;
+}
+
+
+// Products actually in the paid order this journey is linked to — each
+// with its own AI-read usage instructions, scoped strictly to this
+// customer's own order so nobody else (other customers, store admins,
+// the super admin) can see it.
+export async function getRoutineProductsForOrder(customerId: number, orderId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Kaydka xogta lama heli karo hadda.");
+  const order = (await db.select().from(customerOrders).where(and(eq(customerOrders.id, orderId), eq(customerOrders.customerId, customerId))).limit(1))[0];
+  if (!order) throw new Error("Dalabkan adiga ma lihid.");
+  const rows = await db
+    .select({ item: customerOrderItems, usageInstructions: storeProducts.usageInstructions })
+    .from(customerOrderItems)
+    .leftJoin(storeProducts, eq(customerOrderItems.productId, storeProducts.id))
+    .where(eq(customerOrderItems.orderId, orderId));
+  return rows.map((row) => ({
+    productId: row.item.productId,
+    name: row.item.productName,
+    brand: row.item.brand,
+    usageInstructions: row.usageInstructions ?? null,
+  }));
 }

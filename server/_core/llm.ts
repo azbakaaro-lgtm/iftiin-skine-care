@@ -343,6 +343,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   };
 
   payload.model = model || ENV.llmModel;
+  (payload as Record<string, unknown>).models = [ENV.llmModel, "openrouter/free"];
 
   if (tools && tools.length > 0) {
     payload.tools = tools;
